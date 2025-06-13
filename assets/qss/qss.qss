@@ -28,4 +28,6 @@ QPushButton {
   height: 30px;
   line-height: 30px;
   padding: 5px;
+  margin:5px;
+  width: 100px;
 }

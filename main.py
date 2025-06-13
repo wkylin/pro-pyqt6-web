@@ -273,6 +273,7 @@ def main():
     logger.info("应用程序启动 | 开始初始化")
     app = QApplication(sys.argv)
     app.setApplicationName("PyQt6 Web应用")
+    app.setStyle("Fusion")
     translator = QTranslator()
     locale = QLocale.system().name()
     trans_path = ResourceManager.get_path(f"translations/app_{locale}.qm")
