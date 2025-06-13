@@ -13,7 +13,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineSettings
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtCore import (QUrl, Qt, QThread, pyqtSignal, QObject,
-                         QT_VERSION_STR, QTranslator, QLocale, QLibraryInfo, pyqtSlot)
+                            QT_VERSION_STR, QTranslator, QLocale, QLibraryInfo, pyqtSlot)
 
 # 设置日志
 logging.basicConfig(
@@ -30,10 +30,10 @@ class ResourceManager:
     """资源管理类，处理不同环境下的资源路径"""
     @staticmethod
     def get_path(relative_path):
-        if hasattr(sys, '_MEIPASS'):
-            base_path = sys._MEIPASS
-        else:
-            base_path = os.path.abspath(os.path.dirname(__file__))
+        # if hasattr(sys, '_MEIPASS'):
+        #     base_path = sys._MEIPASS
+        # else:
+        base_path = os.path.abspath(os.path.dirname(__file__))
         logger.debug(f"资源路径解析 | 基础路径: {base_path}, 相对路径: {relative_path}")
         return os.path.join(base_path, relative_path)
 
@@ -80,6 +80,9 @@ class ServerSignals(QObject):
     started = pyqtSignal(int)
     failed = pyqtSignal(str, dict)
 
+class CustomHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args): pass
+
 class HTTPServerThread(QThread):
     def __init__(self, port=8060, directory="."):
         super().__init__()
@@ -97,9 +100,6 @@ class HTTPServerThread(QThread):
 
             os.chdir(self.directory)
             logger.info(f"服务器工作目录 | 路径: {os.getcwd()}")
-
-            class CustomHandler(http.server.SimpleHTTPRequestHandler):
-                def log_message(self, format, *args): pass
 
             self.httpd = socketserver.ThreadingTCPServer(("", self.port), CustomHandler)
             self.httpd.allow_reuse_address = True
@@ -163,7 +163,10 @@ class WebBrowserWindow(QMainWindow):
 
     def init_ui(self):
         self.setWindowTitle("PyQt6 WebEngine 应用")
-        self.setGeometry(100, 100, 1024, 768)
+        icon_path = ResourceManager.get_path("assets/icon/qt.ico")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        self.setGeometry(100, 100, 900, 600)
         central_widget = QWidget()
         layout = QVBoxLayout(central_widget)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -216,7 +219,7 @@ class WebBrowserWindow(QMainWindow):
 
     def load_html(self):
         html_file = os.path.basename(self.html_path)
-        url = QUrl(f"http://localhost:{self.final_port}/{html_file}#/")  # 添加 hash
+        url = QUrl(f"http://localhost:{self.final_port}/{html_file}#/")
         logger.info(f"加载页面 | URL: {url.toString()}")
         self.web_view.load(url)
         self.web_view.page().loadFinished.connect(self.on_page_load_finished)
@@ -259,7 +262,7 @@ def main():
     if os.path.exists(trans_path) and translator.load(trans_path):
         app.installTranslator(translator)
 
-    splash_pixmap = ResourceManager.load_png_as_pixmap("assets/splash/splash.png", 600, 400)
+    splash_pixmap = ResourceManager.load_png_as_pixmap("assets/splash/splash.png", 100, 100)
     splash = QSplashScreen(splash_pixmap, Qt.WindowType.WindowStaysOnTopHint)
     splash.show()
     app.processEvents()
