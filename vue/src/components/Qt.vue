@@ -16,6 +16,7 @@ const initQWebChannel = () => {
       const channel = new QWebChannel(window.qt.webChannelTransport, (channel) => {
         // 获取桥接对象
         qtObject.value = channel.objects.bridge;
+        window.bridge = channel.objects.bridge;
 
         // 连接信号处理函数
         if (qtObject.value) {
@@ -74,6 +75,7 @@ const getQtVersion = async () => {
       const version = await qtObject.value.getQtVersion();
       message.value = `Qt版本: ${version}`;
     } catch (error) {
+      console.log('error', error)
       message.value = '获取Qt版本信息失败';
       return '获取失败';
     }
@@ -139,6 +141,9 @@ onUnmounted(() => {
     }
   }
 });
+
+// 暴露webCalculator对象到全局
+window.webCalculator = webCalculator;
 </script>
 
 <template>

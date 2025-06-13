@@ -30,9 +30,6 @@ class ResourceManager:
     """资源管理类，处理不同环境下的资源路径"""
     @staticmethod
     def get_path(relative_path):
-        # if hasattr(sys, '_MEIPASS'):
-        #     base_path = sys._MEIPASS
-        # else:
         base_path = os.path.abspath(os.path.dirname(__file__))
         logger.debug(f"资源路径解析 | 基础路径: {base_path}, 相对路径: {relative_path}")
         return os.path.join(base_path, relative_path)
@@ -81,7 +78,12 @@ class ServerSignals(QObject):
     failed = pyqtSignal(str, dict)
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
-    def log_message(self, format, *args): pass
+    def log_message(self, format, *args):
+        """
+        This method is intentionally left empty to suppress log messages from the HTTP server.
+        The default implementation logs every request, which can be noisy and unnecessary for this application.
+        """
+        pass
 
 class HTTPServerThread(QThread):
     def __init__(self, port=8060, directory="."):
@@ -97,10 +99,8 @@ class HTTPServerThread(QThread):
         try:
             if not os.path.exists(self.directory):
                 raise FileNotFoundError(f"服务目录不存在 | 路径: {self.directory}")
-
             os.chdir(self.directory)
             logger.info(f"服务器工作目录 | 路径: {os.getcwd()}")
-
             self.httpd = socketserver.ThreadingTCPServer(("", self.port), CustomHandler)
             self.httpd.allow_reuse_address = True
             logger.info(f"服务器启动成功 | 端口: {self.port}")
@@ -138,7 +138,9 @@ class Bridge(QObject):
     @pyqtSlot(str)
     def processWebMessage(self, message):
         self.web_message_count += 1
-        logger.debug(f"收到Web消息 | 编号: {self.web_message_count}, 内容: {message[:50]}...")
+        info = f"收到Web消息 | 编号: {self.web_message_count}, 内容: {message[:50]}..."
+        logger.debug(info)
+        self.messageFromQt.emit(info)
 
     @pyqtSlot(result=str)
     def getQtVersion(self):
@@ -146,7 +148,11 @@ class Bridge(QObject):
 
     @pyqtSlot(int, int, result=int)
     def calculateSum(self, a, b):
+        logger.info(f"Sum: {a + b}")
         return a + b
+    @pyqtSlot(int)
+    def receiveCalculationResult(self, result):
+        print("计算结果:", result)
 
 class WebBrowserWindow(QMainWindow):
     def __init__(self, port=8060, html_path="vue/dist/index.html"):
@@ -174,7 +180,6 @@ class WebBrowserWindow(QMainWindow):
         self.web_view = QWebEngineView()
         layout.addWidget(self.web_view)
         self.setCentralWidget(central_widget)
-
         settings = self.web_view.settings()
         settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
         settings.setAttribute(QWebEngineSettings.WebAttribute.JavascriptEnabled, True)
@@ -196,13 +201,11 @@ class WebBrowserWindow(QMainWindow):
             QMessageBox.critical(self, "启动错误", f"无法找到Vue项目目录:\n{vue_dir}")
             self.close()
             return
-
         self.final_port = PortManager.find_available_port(self.original_port)
         if not self.final_port:
             QMessageBox.critical(self, "启动错误", "无法找到可用端口")
             self.close()
             return
-
         self.server_thread = HTTPServerThread(self.final_port, vue_dir)
         self.server_thread.signals.started.connect(self.on_server_started)
         self.server_thread.signals.failed.connect(self.on_server_failed)
@@ -228,6 +231,7 @@ class WebBrowserWindow(QMainWindow):
         if success:
             logger.info("Web页面加载完成 | 初始化通信通道")
             self.init_web_channel()
+            self.add_calculator_button()
         else:
             logger.warning("Web页面加载失败 | 可能是网络或资源问题")
             QMessageBox.warning(self, "页面加载警告", "Web页面加载失败，请检查资源路径")
@@ -245,32 +249,42 @@ class WebBrowserWindow(QMainWindow):
             logger.error(f"WebChannel初始化失败 | 错误: {str(e)}")
             QMessageBox.error(self, "通信初始化失败", f"Qt与Web页面通信失败:\n{str(e)}")
 
+    def add_calculator_button(self):
+        calculator_button = QPushButton("执行计算")
+        calculator_button.clicked.connect(self.execute_calculation)
+        layout = self.centralWidget().layout()
+        layout.addWidget(calculator_button)
+
+    def execute_calculation(self):
+        self.web_view.page().runJavaScript("webCalculator.performCalculation(55, 3).then(result => {window.bridge.receiveCalculationResult(result)});")
+
+    def js_callback(self, result):
+        # 回调函数，处理 JavaScript 执行结果
+        print("JavaScript result:", result)
+
     def closeEvent(self, event):
         logger.info("应用程序关闭事件 | 开始释放资源")
-        if self.server_thread and self.server_thread.running:
+        if self.server_thread and self.server_thread.isRunning():
             self.server_thread.stop()
+            self.server_thread.wait()
         event.accept()
 
 def main():
     logger.info("应用程序启动 | 开始初始化")
     app = QApplication(sys.argv)
     app.setApplicationName("PyQt6 Web应用")
-
     translator = QTranslator()
     locale = QLocale.system().name()
     trans_path = ResourceManager.get_path(f"translations/app_{locale}.qm")
     if os.path.exists(trans_path) and translator.load(trans_path):
         app.installTranslator(translator)
-
     splash_pixmap = ResourceManager.load_png_as_pixmap("assets/splash/splash.png", 100, 100)
     splash = QSplashScreen(splash_pixmap, Qt.WindowType.WindowStaysOnTopHint)
     splash.show()
     app.processEvents()
-
     main_window = WebBrowserWindow()
     main_window.show()
     splash.finish(main_window)
-
     logger.info("应用程序启动完成 | 进入主循环")
     sys.exit(app.exec())
 
