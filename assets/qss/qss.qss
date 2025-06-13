@@ -1,0 +1,25 @@
+QMainWindow, QWidget {
+  background-color: #f1f1f1;
+}
+
+QVBoxLayout{
+  padding:0;
+  margin:0;
+}
+QWebEngineView{
+  padding:0;
+  margin:0;
+}
+
+QLabel {
+  color: #000;
+  font-size: 18px;
+  padding: 10px;
+
+}
+
+QLineEdit {
+  padding: 10px;
+  border: 1px solid #2d18a1;
+  border-radius: 4px;
+}
