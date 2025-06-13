@@ -1,24 +1,54 @@
 import sys
+import logging
+import os
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import (QApplication, QMainWindow,QLabel, QLineEdit, QVBoxLayout, QWidget,
                             QSlider,QSpinBox, QTabWidget, QHBoxLayout, QPushButton)
 
+# 设置日志
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s',
+    handlers=[
+        logging.FileHandler("app_debug.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("PyQt6Browser")
 
-def load_qss_file(file_path):
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        print(f"Error loading QSS file: {e}")
-        return ""
+class ResourceManager:
+    """资源管理类，处理不同环境下的资源路径"""
+    @staticmethod
+    def get_path(relative_path):
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        logger.debug(f"资源路径解析 | 基础路径: {base_path}, 相对路径: {relative_path}")
+        return os.path.join(base_path, relative_path)
+
+    @staticmethod
+    def load_png_as_pixmap(png_path, width=600, height=400):
+        pixmap_path = ResourceManager.get_path(png_path)
+        if os.path.exists(pixmap_path):
+            try:
+                pixmap = QPixmap(pixmap_path)
+                return pixmap.scaled(
+                    width, height,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )
+            except Exception as e:
+                logger.error(f"加载PNG失败 | 路径: {pixmap_path}, 错误: {str(e)}")
+        logger.warning(f"PNG文件不存在 | 路径: {pixmap_path}")
+        pixmap = QPixmap(width, height)
+        pixmap.fill(Qt.GlobalColor.gray)
+        return pixmap
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("My App")
-        self.setWindowIcon(QIcon("assets/icon/icon.png"))
+        self.setWindowIcon(QIcon(ResourceManager.get_path("assets/icon/qt.ico")))
         self.setGeometry(200, 200, 900, 600)
 
         self.label = QLabel("My Name:")
@@ -28,7 +58,7 @@ class MainWindow(QMainWindow):
         self.input.textChanged.connect(self.label.setText)
 
         self.widget = QLabel("Hello")
-        self.pixmap = QPixmap("assets/img/fx.png")
+        self.pixmap = QPixmap(ResourceManager.get_path("assets/img/fx.png"))
         scaled_pixmap = self.pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.widget.setPixmap(scaled_pixmap)
 
@@ -87,13 +117,20 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
         # 应用 QSS 样式表
-        qss_path = "assets/qss/qss.qss"
-        qss_content = load_qss_file(qss_path)
-        if qss_content:
-            self.setStyleSheet(qss_content)
+        self.load_qss()
+
+    def load_qss(self):
+        qss_path = ResourceManager.get_path("assets/qss/qss.qss")
+        if os.path.exists(qss_path):
+            try:
+                with open(qss_path, "r", encoding="utf-8") as f:
+                    self.setStyleSheet(f.read())
+                    logger.info("QSS样式表加载成功")
+            except Exception as e:
+                logger.error(f"QSS加载失败 | 错误: {str(e)}")
 
 app = QApplication(sys.argv)
-
+app.setStyle("Fusion")
 window = MainWindow()
 window.show()
 

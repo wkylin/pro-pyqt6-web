@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('vue/dist', 'vue/dist'), ('assets', 'qss'), ('assets/splash', 'splash'), ('assets/icon', 'qt')],
+    datas=[('vue/dist', 'vue/dist'), ('assets/qss/qss.qss', 'assets/qss'), ('assets/splash/splash.png', 'assets/splash'), ('assets/icon/qt.ico', 'assets/icon')],
     hiddenimports=['PyQt6.QtWebEngineWidgets', 'PyQt6.QtWebChannel'],
     hookspath=[],
     hooksconfig={},
