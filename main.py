@@ -13,7 +13,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineSettings
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtCore import (QUrl, Qt, QThread, pyqtSignal, QObject,
-                            QT_VERSION_STR, QTranslator, QLocale, QLibraryInfo, pyqtSlot)
+                            QT_VERSION_STR, PYQT_VERSION_STR, QTranslator, QLocale, QLibraryInfo, pyqtSlot)
 
 # 设置日志
 logging.basicConfig(
@@ -144,7 +144,7 @@ class Bridge(QObject):
 
     @pyqtSlot(result=str)
     def getQtVersion(self):
-        return f"PyQt6 版本: {QT_VERSION_STR}"
+        return f"PyQt6 版本: {PYQT_VERSION_STR}, QT6版本: {QT_VERSION_STR}"
 
     @pyqtSlot(int, int, result=int)
     def calculateSum(self, a, b):
