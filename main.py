@@ -61,6 +61,7 @@ def main():
     # 彻底清理日志
     info(f"应用程序退出 | 退出代码: {ret}")
     info("=" * 50)
+    app.quit()
     sys.exit(ret)
 
 if __name__ == "__main__":

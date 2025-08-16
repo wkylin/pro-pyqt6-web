@@ -261,7 +261,7 @@ class WebBrowserWindow(QMainWindow):
             if self.bridge:
                 self.bridge.deleteLater()
                 self.bridge = None
-            
+            QApplication.instance().quit()
             info(f"资源释放完成 | 总耗时: {time.time() - start_time:.3f}s")
             event.accept()
             
