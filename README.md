@@ -77,5 +77,5 @@ cd vue
 pyinstaller main.spec
 
 ```
-pyinstaller --icon="assets/icon/qt.ico" --add-data="assets/qss/qss.qss;assets/qss" --add-data="assets/icon/qt.ico;assets/icon"  -Fw main.py
+pyinstaller --icon="assets/icon/qt.ico" --add-data="assets/qss/qss.qss;assets/qss" --add-data="assets/icon/qt.ico;assets/icon" --add-data="vue/dist;vue/dist"  -Fw main.py
 ```
