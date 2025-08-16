@@ -26,8 +26,8 @@ class Bridge(QObject):
     def processWebMessage(self, message: str) -> None:
         """处理来自Web页面的字符串消息"""
         self.web_message_count += 1
-        info(f"收到Web消息 | 编号: {self.web_message_count}, 内容: {message[:50]}...")
-        self.messageFromQt.emit(f"已收到消息: {message[:20]}...")
+        info(f"收到Web消息 | 编号: {self.web_message_count}, 内容: {message}...")
+        self.messageFromQt.emit(f"已收到消息: {message}...")
     
     @pyqtSlot(dict)
     def processWebJson(self, data: dict) -> None:
