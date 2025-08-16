@@ -1,9 +1,7 @@
 import os
 import time
-from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QMessageBox,
-                            QPushButton, QApplication)
-from PyQt6.QtCore import (QUrl, Qt, pyqtSignal, QTimer, QPropertyAnimation,
-                         QEasingCurve, QThread)
+from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QMessageBox, QPushButton, QApplication)
+from PyQt6.QtCore import (QUrl, Qt, pyqtSignal, QTimer, QPropertyAnimation, QEasingCurve, QThread)
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineSettings
 from config.settings import AppConfig

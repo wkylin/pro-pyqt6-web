@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QSplashScreen, QVBoxLayout, QLabel, QProgressBar, QWidget, QGraphicsOpacityEffect
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QColor
 from utils.logger import info, debug
 from config.settings import AppConfig
 
@@ -10,7 +10,7 @@ class SplashScreen(QSplashScreen):
     def __init__(self, app):
         # 关键修复1：设置初始空白pixmap，确保窗口有实体
         blank_pixmap = QPixmap(AppConfig.SPLASH_WIDTH, AppConfig.SPLASH_HEIGHT)
-        blank_pixmap.fill(Qt.GlobalColor.transparent)  # 透明背景，后续由样式表控制
+        blank_pixmap.fill(QColor(45,45, 48))  # 透明背景，后续由样式表控制
         super().__init__(blank_pixmap)
         
         self.app = app

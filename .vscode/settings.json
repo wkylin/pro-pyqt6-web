@@ -5,6 +5,7 @@
     "pixmap",
     "Pixmap",
     "qlineargradient",
-    "socketpair"
+    "socketpair",
+    "unplugin"
   ]
 }
